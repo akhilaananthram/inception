@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from distutils.core import setup
+from setuptools import setup
 
 # TODO: in order for this work as a valid installation, need a way of
 # copying the thirdParty directory alongside as well as this contains
