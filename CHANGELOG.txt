@@ -1,0 +1,3 @@
+-changed setup.py to use setuptools instead of distutils
+-upgraded to openCV==3.0
+-alias matlab="/Applications/MATLAB_R2014a.app/bin/matlab"
