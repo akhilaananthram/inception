@@ -40,13 +40,20 @@ if __name__ == "__main__":
   tempdir = tempfile.mkdtemp()
 
   # Calculate the scene description for the background
+  scene_descriptions = []
   for b in backgrounds:
     bname, bext = os.path.splitext(os.path.basename(b))
 
-    sd = scene.SceneDescription(b)
-    sd_pkl = os.path.join(tempdir, "{}.pkl".format(bname))
-    with open(sd_pkl, "w") as f:
-      pkl.dump(sd, f)
+    try:
+      sd = scene.SceneDescription(b)
+      sd_pkl = os.path.join(tempdir, "{}.pkl".format(bname))
+      with open(sd_pkl, "w") as f:
+        pkl.dump(sd, f)
+      scene_descriptions.append((sd_pkl, bname, bext))
+    # TODO: figure out which exceptions could happen
+    except Exception as e:
+      print type(e), e
+      continue
 
   for f in foregrounds:
     fname, fext = os.path.splitext(os.path.basename(f))
@@ -56,11 +63,8 @@ if __name__ == "__main__":
       os.mkdir(o)
     shutil.copy(f, os.path.join(o, "{}{}".format("iconic", fext)))
 
-    backgrounds_sample = backgrounds[np.random.choice(len(backgrounds), min(15, len(backgrounds)))]
-    for b in backgrounds_sample:
-      bname, bext = os.path.splitext(os.path.basename(b))
-      sd_pkl = os.path.join(tempdir, "{}.pkl".format(bname))
-
+    backgrounds_sample = scene_descriptions[np.random.choice(len(scene_descriptions), min(15, len(scene_descriptions)))]
+    for sd_pkl, bname, bext in backgrounds_sample:
       cmd = "python inception -s {} -e {} -o {}{} -sd {}".format(f, b, os.path.join(o, bname), bext, sd_pkl)
       print cmd
       subprocess.check_call(shlex.split(cmd))
