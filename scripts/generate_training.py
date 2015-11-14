@@ -37,7 +37,9 @@ if __name__ == "__main__":
   os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
   # Folder for temporary scene descriptions
-  tempdir = tempfile.mkdtemp()
+  o = os.path.join(args.dest, "scene_desc")
+  if not os.path.isdir(o):
+    os.mkdir(o)
 
   # Calculate the scene description for the background
   scene_descriptions = []
@@ -46,7 +48,7 @@ if __name__ == "__main__":
 
     try:
       sd = scene.SceneDescription(b)
-      sd_pkl = os.path.join(tempdir, "{}.pkl".format(bname))
+      sd_pkl = os.path.join(args.dest, "scene_desc", "{}.pkl".format(bname))
       with open(sd_pkl, "w") as f:
         pkl.dump(sd, f)
       scene_descriptions.append((sd_pkl, bname, bext))
@@ -54,6 +56,8 @@ if __name__ == "__main__":
     except Exception as e:
       print type(e), e
       continue
+
+  scene_descriptions = np.array(scene_descriptions)
 
   for f in foregrounds:
     fname, fext = os.path.splitext(os.path.basename(f))
