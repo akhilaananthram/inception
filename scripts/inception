@@ -26,7 +26,8 @@ class App(object):
         logging.info("Running inception commandline")
         scene_description = None
         if os.path.isfile(self.args.scene_desc):
-          scene_description = pkl.load(self.args.scene_desc)
+          with open(self.args.scene_desc) as f:
+            scene_description = pkl.load(f)
 
         output = inception.magic_insert(self.args.source_image, self.args.dest_image, boundingbox=self.args.boundingbox, 
                                         constrain_scale=self.args.constrain_scale, generate_shadow=self.args.shadow,
