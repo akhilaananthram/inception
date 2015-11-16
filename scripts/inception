@@ -2,6 +2,11 @@
 import logging
 import inception
 import json
+import os
+try:
+  import cPickle as pkl
+except ImportError:
+  import pickle as pkl
 
 class App(object):
     def __init__(self, args):
@@ -19,9 +24,14 @@ class App(object):
     def run(self):
         # application main launch point
         logging.info("Running inception commandline")
+        scene_description = None
+        if os.path.isfile(self.args.scene_desc):
+          scene_description = pkl.load(self.args.scene_desc)
+
         output = inception.magic_insert(self.args.source_image, self.args.dest_image, boundingbox=self.args.boundingbox, 
                                         constrain_scale=self.args.constrain_scale, generate_shadow=self.args.shadow,
-                                        perform_statadjust=self.args.statadjust, **json.loads(self.args.kwargs))
+                                        perform_statadjust=self.args.statadjust, scene_description=scene_description,
+                                        **json.loads(self.args.kwargs))
         output.save(self.args.output)
 
 if __name__ == '__main__':
@@ -30,6 +40,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="A commandline object insertion tool")
     parser.add_argument('--source_image','-source','-s', metavar="FILEPATH", help="The filepath to the source image to insert",required=True)
     parser.add_argument('--dest_image','-dest','-e',metavar="FILEPATH",help="The filepath to the image to insert the source into",required=True)
+    parser.add_argument('--scene_description', '-sd', dest="scene_desc", default="", help="The pickle file for the scene description of the background")
     parser.add_argument('--output','-o',metavar="FILEPATH",help="Where to output the resulting composition", default="output.png")
     parser.add_argument('--boundingbox','-bbox','-b',nargs=4,help="The bounding box for where to insert the source image in the dest image, given as four"
                                                             " coordinates corresponding to (upperleft.x, upperleft.y, lowerright.x, lowerright.y)")

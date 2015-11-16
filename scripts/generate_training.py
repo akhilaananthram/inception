@@ -18,9 +18,11 @@ except ImportError:
 if __name__ == "__main__":
   parser = argparse.ArgumentParser("Training set generator")
   parser.add_argument("--b", "--backgrounds", dest="backgrounds",
-      help="Folder containing background images")
+      help="Folder containing background images", required=True)
   parser.add_argument("--f", "--foregrounds", dest="foregrounds",
-      help="Folder containing foreground images")
+      help="Folder containing foreground images", required=True)
+  parser.add_argument("--sd", "--scene-descriptions", dest="scene_desc",
+      help="Folder containing scene descriptions for backgrounds", default="")
   parser.add_argument("--dest", help="Location to store training set",
       default=os.getcwd())
 
@@ -42,20 +44,23 @@ if __name__ == "__main__":
     os.mkdir(o)
 
   # Calculate the scene description for the background
-  scene_descriptions = []
-  for b in backgrounds:
-    bname, bext = os.path.splitext(os.path.basename(b))
+  if os.path.isdir(args.scene_desc):
+    scene_descriptions = np.array(glob.glob(os.path.join(args.scene_desc, "*.pkl")))
+  else:
+    scene_descriptions = []
+    for b in backgrounds:
+      bname, bext = os.path.splitext(os.path.basename(b))
 
-    try:
-      sd = scene.SceneDescription(b)
-      sd_pkl = os.path.join(args.dest, "scene_desc", "{}.pkl".format(bname))
-      with open(sd_pkl, "w") as f:
-        pkl.dump(sd, f)
-      scene_descriptions.append((sd_pkl, bname, bext))
-    # TODO: figure out which exceptions could happen
-    except Exception as e:
-      print type(e), e
-      continue
+      try:
+        sd = scene.SceneDescription(b)
+        sd_pkl = os.path.join(args.dest, "scene_desc", "{}.pkl".format(bname))
+        with open(sd_pkl, "w") as f:
+          pkl.dump(sd, f)
+        scene_descriptions.append((sd_pkl, bname, bext))
+      # TODO: figure out which exceptions could happen
+      except Exception as e:
+        print type(e), e
+        continue
 
   scene_descriptions = np.array(scene_descriptions)
 
