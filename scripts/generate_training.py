@@ -30,7 +30,6 @@ if __name__ == "__main__":
 
   # TODO: accept other image types
   foregrounds = np.array(glob.glob(os.path.join(args.foregrounds, "*.jpg")))
-  backgrounds = np.array(glob.glob(os.path.join(args.backgrounds, "*.jpg")))
 
   if not os.path.isdir(args.dest):
     os.makdir(args.dest)
@@ -47,6 +46,7 @@ if __name__ == "__main__":
   if os.path.isdir(args.scene_desc):
     scene_descriptions = np.array(glob.glob(os.path.join(args.scene_desc, "*.pkl")))
   else:
+    backgrounds = np.array(glob.glob(os.path.join(args.backgrounds, "*.jpg")))
     scene_descriptions = []
     for b in backgrounds:
       bname, _  = os.path.splitext(os.path.basename(b))
@@ -75,7 +75,7 @@ if __name__ == "__main__":
     backgrounds_sample = scene_descriptions[np.random.choice(len(scene_descriptions), min(15, len(scene_descriptions)))]
     for sd_pkl in backgrounds_sample:
       bname, _  = os.path.splitext(os.path.basename(sd_pkl))
-      cmd = "python inception -s {} -e {} -o {}.jpg -sd {}".format(f, b, os.path.join(o, bname), sd_pkl)
+      cmd = "python inception -s {} -e {}.jpg -o {}.jpg -sd {}".format(f, os.path.join(args.backgrounds, bname), os.path.join(o, bname), sd_pkl)
       print cmd
       subprocess.check_call(shlex.split(cmd))
   
