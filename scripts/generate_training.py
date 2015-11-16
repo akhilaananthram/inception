@@ -77,6 +77,10 @@ if __name__ == "__main__":
       bname, _  = os.path.splitext(os.path.basename(sd_pkl))
       cmd = "python inception -s {} -e {}.jpg -o {}.jpg -sd {}".format(f, os.path.join(args.backgrounds, bname), os.path.join(o, bname), sd_pkl)
       print cmd
-      subprocess.check_call(shlex.split(cmd))
+      try:
+        subprocess.check_call(shlex.split(cmd))
+      except Exception as e:
+        print type(e), e
+        continue
   
   os.chdir(curr_dir)
