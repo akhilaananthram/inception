@@ -39,7 +39,7 @@ if __name__ == "__main__":
 
   # TODO: accept other image types
   # sample from forgrounds to parallelize
-  foregrounds = np.array(glob.glob(os.path.join(args.foregrounds, "*.jpg")))[self.job_id::self.num_jobs]
+  foregrounds = np.array(glob.glob(os.path.join(args.foregrounds, "*.jpg")))[args.job_id::args.num_jobs]
 
   if not os.path.isdir(args.dest):
     os.makdir(args.dest)
