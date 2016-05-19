@@ -45,7 +45,7 @@ if __name__ == "__main__":
   foregrounds = np.array(glob.glob(os.path.join(args.foregrounds, "*.{}".format(args.img_type))))[args.job_id::args.num_jobs]
 
   if not os.path.isdir(args.dest):
-    os.makdir(args.dest)
+    os.mkdir(args.dest)
 
   curr_dir = os.getcwd()
   os.chdir(os.path.dirname(os.path.realpath(__file__)))

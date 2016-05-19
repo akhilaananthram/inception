@@ -1,6 +1,8 @@
 import argparse
 import os
 import shutil
+import numpy as np
+import glob
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser("Copy iconic")
@@ -10,6 +12,7 @@ if __name__ == "__main__":
       default=os.getcwd())
   parser.add_argument("--img-type", choices=["jpg", "png"], default="jpg",
                       help="Type of images to use")
+  args = parser.parse_args()
 
   foregrounds = np.array(glob.glob(os.path.join(args.foregrounds, "*.{}".format(args.img_type))))
   print "Processing {} images".format(len(foregrounds))
