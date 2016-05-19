@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import argparse
+import cv2
 import glob
 import numpy as np
 import os
@@ -31,6 +32,8 @@ if __name__ == "__main__":
       help="Job id if parallelizing the program on --num-jobs machines between [0, num_jobs - 1]")
   parser.add_argument("--num-jobs", dest="num_jobs", type=int, default=1,
       help="Number of machines you are parallelizing on")
+  parser.add_argument("--img-type", choices=["jpg", "png"], default="jpg",
+                      help="Type of images to use")
 
   args = parser.parse_args()
 
@@ -39,7 +42,7 @@ if __name__ == "__main__":
 
   # TODO: accept other image types
   # sample from forgrounds to parallelize
-  foregrounds = np.array(glob.glob(os.path.join(args.foregrounds, "*.jpg")))[args.job_id::args.num_jobs]
+  foregrounds = np.array(glob.glob(os.path.join(args.foregrounds, "*.{}".format(args.img_type))))[args.job_id::args.num_jobs]
 
   if not os.path.isdir(args.dest):
     os.makdir(args.dest)
@@ -59,7 +62,7 @@ if __name__ == "__main__":
   scene_descriptions = glob.glob(os.path.join(o, "*.pkl"))
 
   # Calculate the scene description for the remaining backgrounds
-  backgrounds = glob.glob(os.path.join(args.backgrounds, "*.jpg"))
+  backgrounds = glob.glob(os.path.join(args.backgrounds, "*.{}".format(args.img_type)))
   for b in backgrounds:
     bname, _  = os.path.splitext(os.path.basename(b))
 
@@ -75,6 +78,7 @@ if __name__ == "__main__":
         continue
   scene_descriptions = np.array(scene_descriptions)
 
+  mid_shapes = {}
   for f in foregrounds:
     fname, fext = os.path.splitext(os.path.basename(f))
     o = os.path.join(args.dest, fname)
@@ -82,17 +86,36 @@ if __name__ == "__main__":
     if not os.path.isdir(o):
       os.mkdir(o)
 
-    in_situ = [f for f in glob.glob(os.path.join(o, "*.jpg")) if not f.endswith("iconic.jpg")]
+    in_situ = [f for f in glob.glob(os.path.join(o, "*.{}".format(fext))) if not f.endswith("iconic.{}".format(fext))]
     if len(in_situ) >= args.in_situ:
       continue
     shutil.copy(f, os.path.join(o, "{}{}".format("iconic", fext)))
+
+    f_height, f_width = (cv2.imread(f)).shape[:2]
+    f_height, f_width = (f_height / 2, f_width / 2)
 
     # TODO: ignore any backgrounds that have already been done
     sample = np.random.choice(len(scene_descriptions), min(args.in_situ - len(in_situ), len(scene_descriptions)))
     backgrounds_sample = scene_descriptions[sample]
     for sd_pkl in backgrounds_sample:
       bname, _  = os.path.splitext(os.path.basename(sd_pkl))
-      cmd = "python inception -s {} -e {}.jpg -o {}.jpg -sd {}".format(f, os.path.join(args.backgrounds, bname), os.path.join(o, bname), sd_pkl)
+      e = "{}.{}".format(os.path.join(args.backgrounds, bname), fext)
+      out_file = "{}.{}".format(os.path.join(o, bname), fext)
+
+      # get bounding box
+      if e not in shapes:
+        e_height, e_width = (cv2.imread(e)).shape[:2]
+        e_height, e_width = (e_height / 2, e_width / 2)
+        mid_shapes[e] = (e_height, e_width)
+      else:
+        e_height, e_width = mid_shapes[e]
+      up_l_x = e_width - f_width
+      up_l_y = e_height - f_height
+      lo_r_x = e_width + f_width
+      lo_r_y = e_height + f_height
+
+      bounding_box = "{} {} {} {}".format(up_l_x, up_l_y, lo_r_x, lo_r_y)
+      cmd = "python inception -s {} -e {} -o {} -sd {} -b {}".format(f, e, out_file, sd_pkl, bounding_box)
       print cmd
       try:
         subprocess.check_call(shlex.split(cmd))
