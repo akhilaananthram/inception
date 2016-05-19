@@ -86,7 +86,7 @@ if __name__ == "__main__":
     if not os.path.isdir(o):
       os.mkdir(o)
 
-    in_situ = [f for f in glob.glob(os.path.join(o, "*.{}".format(fext))) if not f.endswith("iconic.{}".format(fext))]
+    in_situ = [f for f in glob.glob(os.path.join(o, "*{}".format(fext))) if not f.endswith("iconic{}".format(fext))]
     if len(in_situ) >= args.in_situ:
       continue
     shutil.copy(f, os.path.join(o, "{}{}".format("iconic", fext)))
@@ -99,8 +99,8 @@ if __name__ == "__main__":
     backgrounds_sample = scene_descriptions[sample]
     for sd_pkl in backgrounds_sample:
       bname, _  = os.path.splitext(os.path.basename(sd_pkl))
-      e = "{}.{}".format(os.path.join(args.backgrounds, bname), fext)
-      out_file = "{}.{}".format(os.path.join(o, bname), fext)
+      e = "{}{}".format(os.path.join(args.backgrounds, bname), fext)
+      out_file = "{}{}".format(os.path.join(o, bname), fext)
 
       # get bounding box
       if e not in shapes:
